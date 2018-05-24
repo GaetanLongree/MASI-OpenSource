@@ -1,7 +1,7 @@
 version: '3'
 services:
   openldap:
-    image: jsmitsnl/docker-openldap-postfix-book:latest
+    image: cajetan19/openldap
     container_name: openldap
     hostname: "openldap.iglu.lu"
     environment:
