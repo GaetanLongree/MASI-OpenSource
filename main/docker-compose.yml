@@ -54,7 +54,7 @@ services:
         ipv4_address: ${IP_DNS}
     dns: ${IP_DNS}
     ports:
-      - "53:53"
+      - "53:53/udp"
     depends_on:
       - dns-db
     restart: unless-stopped

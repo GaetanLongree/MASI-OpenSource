@@ -1,4 +1,6 @@
 
+\c pdns
+
 INSERT INTO pdns.domains (name, type) values ('$TLD_DOMAIN', 'NATIVE');
 INSERT INTO pdns.records (domain_id, name, content, type,ttl,prio) VALUES (1,'$TLD_DOMAIN','$DNS_IP admin.$TLD_DOMAIN 1 10380 3600 604800 3600','SOA',86400,NULL);
 INSERT INTO pdns.records (domain_id, name, content, type,ttl,prio) VALUES (1,'$TLD_DOMAIN','$DNS_IP','NS',86400,NULL);
