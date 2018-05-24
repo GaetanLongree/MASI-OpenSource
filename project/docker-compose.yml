@@ -184,7 +184,7 @@ services:
 networks:
   main-central:
     external:
-      name: main_main-central
+      name: main-network
   project-network:
     driver: bridge
     name: ${PROJECT_NAME}

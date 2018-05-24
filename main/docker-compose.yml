@@ -1,4 +1,4 @@
-version: '3'
+version: '3.5'
 services:
   openldap:
     image: cajetan19/openldap
@@ -172,6 +172,7 @@ services:
 networks:
   main-central:
     driver: bridge
+    name: main-network
     ipam:
       config:
         - subnet: ${MAIN_NETWORK_SUBNET:-172.20.0.0/24}
