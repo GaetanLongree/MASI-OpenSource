@@ -1,0 +1,193 @@
+version: '3.5'
+services:
+
+  mail:
+    image: tvial/docker-mailserver:latest
+    container_name: mail.${PROJECT_NAME}
+    hostname: "mail.${PROJECT_NAME}.iglu.lu"
+    environment:
+      DMS_DEBUG: 0
+      ENABLE_CLAMAV: 1
+      ONE_DIR: 1
+      ENABLE_POP3: 1
+      ENABLE_FAIL2BAN: 0
+      ENABLE_MANAGESIEVE: 0
+      OVERRIDE_HOSTNAME: "mail.${PROJECT_NAME}.iglu.lu"
+      POSTMASTER_ADDRESS: "postmaster@${PROJECT_NAME}.iglu.lu"
+      POSTSCREEN_ACTION: "enforce"
+      SPOOF_PROTECTION: 1
+      ENABLE_SRS: 0
+      ENABLE_SPAMASSASSIN: 1
+      ENABLE_LDAP: 1
+      LDAP_SERVER_HOST: ${IP_LDAP_HOST}
+      LDAP_SEARCH_BASE: "ou=users,dc=iglu,dc=lu"
+      LDAP_BIND_DN: "${LDAP_ADMIN_DN:-cd=admin,dc=iglu,dc=lu}"
+      LDAP_BIND_PW: "${LDAP_ADMIN_PASSWD:-Tigrou007}"
+      ENABLE_POSTGREY: 1
+      ENABLE_SASLAUTHD: 1
+      SASLAUTHD_MECHANISMS: "ldap"
+      SASLAUTHD_LDAP_SERVER: ${IP_LDAP_HOST}
+      SASLAUTHD_LDAP_SSL: 0
+      SASLAUTHD_LDAP_BIND_DN: "${LDAP_ADMIN_DN:-cd=admin,dc=iglu,dc=lu}"
+      SASLAUTHD_LDAP_PASSWORD: "${LDAP_ADMIN_PASSWD:-Tigrou007}"
+      SASLAUTHD_LDAP_SEARCH_BASE: "ou=users,dc=iglu,dc=lu"
+      SASLAUTHD_LDAP_FILTER: "(&(uid=%U)(objectClass=posixAccount))"
+      DOVECOT_PASS_FILTER: "(&(objectClass=posixAccount)(mail=%u))"
+      DOVECOT_USER_FILTER: "(&(objectClass=posixAccount)(mail=%u))"
+      LDAP_QUERY_FILTER_USER: "(&(mail=%s)(mailEnabled=TRUE))"
+      LDAP_QUERY_FILTER_GROUP: "(&(mail=%s)(mailEnabled=TRUE))"
+      LDAP_QUERY_FILTER_ALIAS: "(&(mail=%s)(mailEnabled=TRUE))"
+    volumes:
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_MAIL_MAILS}:/var/mail
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_MAIL_STATE}:/var/mail-state
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_MAIL_CONF}:/tmp/docker-mailserver
+    networks:
+      main-central: {}
+      project-network:
+        ipv4_address: ${IP_MAIL}
+    dns: ${IP_DNS}
+    ports:
+      - "25:25"
+      - "143:143"
+      - "587:587"
+      - "993:993"
+    restart: unless-stopped
+
+  roundcube:
+    container_name: webmail.${PROJECT_NAME}
+    hostname: "webmail.${PROJECT_NAME}.iglu.lu"
+    image: roundcube/roundcubemail
+    environment:
+      ROUNDCUBEMAIL_DEFAULT_HOST: ${IP_MAIL}
+      ROUNDCUBEMAIL_SMTP_SERVER: ${IP_MAIL}
+      ROUNDCUBEMAIL_SMTP_PORT: 25
+      ROUNDCUBEMAIL_PLUGINS: "openssl"
+    volumes:
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_ROUNDCUBE}:/var/roundcube/config/ 
+    networks:
+      project-network:
+        ipv4_address: ${IP_WEBMAIL}
+    dns: ${IP_DNS}
+    ports:
+      - "9080:80"
+    restart: unless-stopped      
+
+  samba:
+    image: cajetan19/samba-ldap
+    container_name: files.${PROJECT_NAME}
+    hostname: "files.${PROJECT_NAME}.iglu.lu"
+    volumes:
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_CONF}:/etc/samba
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_LDAPTOOLS_CONF}:/etc/smbldap-tools
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_PRIVATE}:/var/lib/samba/private
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_SHARE}:/share
+    networks:
+      project-network:
+        ipv4_address: ${IP_SAMBA}
+    dns: ${IP_DNS}
+    ports:
+      - "139:139"
+      - "445:445"
+    restart: unless-stopped
+
+  gitlab:
+    image: 'gitlab/gitlab-ce:latest'
+    container_name: gitlab.${PROJECT_NAME}
+    hostname: "gitlab.${PROJECT_NAME}.iglu.lu"
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://gitlab.iglu.lu'
+        gitlab_rails['ldap_servers'] = YAML.load <<-'EOS'
+        main: # 'main' is the GitLab 'provider ID' of this LDAP server
+          label: 'LDAP'
+          host: '${IP_LDAP_HOST}'
+          port: 389
+          uid: 'uid'
+          bind_dn: '${LDAP_ADMIN_DN}'
+          password: '${LDAP_ADMIN_PASSWD}'
+          encryption: 'plain' # "start_tls" or "simple_tls" or "plain"
+          verify_certificates: true
+          active_directory: true
+          allow_username_or_email_login: true
+          lowercase_usernames: false
+          block_auto_created_users: false
+          base: 'OU=users,DC=iglu,DC=lu'
+          user_filter: '(&(uid=%u)(objectClass=posixAccount))'
+        EOS
+    volumes:
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_GITLAB_CONFIG}:/etc/gitlab
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_GITLAB_LOGS}:/var/log/gitlab
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_GITLAB_DATA}:/var/opt/gitlab
+    networks:
+      main-central: {}
+      project-network:
+        ipv4_address: ${IP_GITLAB}
+    dns: ${IP_DNS}
+    ports:
+      - "8080:80"
+      - "8443:443"
+      - "8022:22"
+    restart: unless-stopped
+
+  drupal:
+    image: drupalldap
+    container_name: cms.${PROJECT_NAME}
+    hostname: "cms.${PROJECT_NAME}.iglu.lu"
+    build: .
+    volumes:
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_DRUPAL_MODULES}:/var/www/html/modules
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_DRUPAL_PROFILES}:/var/www/html/profiles
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_DRUPAL_SITES}:/var/www/html/sites
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_DRUPAL_THEMES}:/var/www/html/themes
+    networks:
+      main-central: {}
+      project-network:
+        ipv4_address: ${IP_DRUPAL}
+    dns: ${IP_DNS}
+    ports:
+      - "8090:80"
+    restart: unless-stopped
+
+  drupal-db:
+    image: postgres
+    container_name: drupal-db.${PROJECT_NAME}
+    hostname: "drupal-db.${PROJECT_NAME}.iglu.lu"
+    environment:
+      POSTGRES_USER: "${POSTGRES_DB_ADMIN_USER:-admin}"
+      POSTGRES_PASSWORD: "${POSTGRES_DB_ADMIN_PASSWD:-Tigrou007}"
+    volumes:
+      - ${BASE_VOL}/${PROJECT_NAME}${VOL_DRUPAL_DB_DATA}:/var/lib/postgresql/data
+    networks:
+      main-central: {}
+      project-network:
+        ipv4_address: ${IP_DB_DRUPAL}
+    dns: ${IP_DNS}
+    restart: unless-stopped
+
+  pgadmin4:
+    image: fenglc/pgadmin4
+    container_name: pgadmin.${PROJECT_NAME}
+    hostname: "pgadmin.${PROJECT_NAME}.iglu.lu"
+    environment:
+      DEFAULT_USER: "${PGADMIN_ADMIN_USER:-admin}"
+      DEFAULT_PASSWORD: "${PGADMIN_ADMIN_PASSWD:-Tigrou007}"
+    depends_on:
+      - drupal-db
+    networks:
+      project-network:
+        ipv4_address: ${IP_DB_PGADMIN}
+    dns: ${IP_DNS}
+    ports:
+      - "5050:5050"
+    restart: unless-stopped
+
+networks:
+  main-central:
+    external:
+      name: main_main-central
+  project-network:
+    driver: bridge
+    name: ${PROJECT_NAME}
+    ipam:
+      config:
+        - subnet: ${PROJECT_NETWORK_SUBNET:-172.20.1.0/24}
