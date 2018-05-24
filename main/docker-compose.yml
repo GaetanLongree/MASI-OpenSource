@@ -38,7 +38,7 @@ services:
     restart: unless-stopped
 
   dns:
-    image: cajetan19/docker-powerdns
+    image: cajetan19/powerdns-pgsql
     container_name: dns
     hostname: "dns.iglu.lu" 
     environment: 
@@ -60,7 +60,7 @@ services:
     restart: unless-stopped
 
   dns-db:
-    image: postgres
+    image: cajetan19/postgresql-powerdns
     container_name: dns-db
     hostname: "dns-db.iglu.lu"
     environment:
