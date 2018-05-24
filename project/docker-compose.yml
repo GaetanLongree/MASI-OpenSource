@@ -76,6 +76,9 @@ services:
     image: cajetan19/samba-ldap
     container_name: files.${PROJECT_NAME}
     hostname: "files.${PROJECT_NAME}.iglu.lu"
+    environment:
+      SMB_USER: ${SMB_PROJECT_USER}    
+      SMB_USER_PASSWD: ${SMB_PROJECT_USER_PASSWD}
     volumes:
       - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_CONF}:/etc/samba
       - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_LDAPTOOLS_CONF}:/etc/smbldap-tools
