@@ -171,7 +171,19 @@ services:
     ports:
       - "${PUBLIC_IP}:5080:80"
     restart: unless-stopped
-
+  web:
+    image: httpd
+    container_name: httpd.${PROJECT_NAME}
+    ports:
+      - 7080:80
+    volumes:
+      - ${VOL_HTTPD_HTDOCS}:/var/www
+      - ${VOL_HTTPD_CONF}:/local/apache2/conf
+      - ${VOL_HTTPD_LOGS}:/var/log/apache2
+    networks:
+      project-network:
+        ipv4_address: ${IP_HTTPD}
+    dns: ${IP_DNS}    
 networks:
   main-central:
     external:
