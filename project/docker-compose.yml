@@ -79,6 +79,8 @@ services:
     environment:
       SMB_USER: ${SMB_PROJECT_USER}    
       SMB_USER_PASSWD: ${SMB_PROJECT_USER_PASSWD}
+      SMB_EXT_USER: ${SMB_EXTERNAL_USER}    
+      SMB_EXT_USER_PASSWD: ${SMB_EXTERNAL_USER_PASSWD}
     volumes:
       - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_CONF}:/etc/samba
       - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_SHARE}:/share
