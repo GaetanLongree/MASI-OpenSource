@@ -71,15 +71,8 @@ NEXT_UID=1000
 declare -i NEXT_UID
 
 INPUT=users.csv
-IFS=,
 
-if [ -f users.ldif ]; then
-        rm users.ldif
-    fi
-
-    # TODO assign groups whe 600=admin 601=user 602=externals
-
-while read name surname username group
+while IFS=, read -r name surname username group
 do
 if [ ! "$name" == "name" ]; then
 
@@ -91,7 +84,7 @@ elif [ $group = "externals" ]; then
     $GID=602
 fi
 
-cat >> users.ldif << EOF
+cat > users.ldif << EOF
 
 dn: cn=${name} ${surname},ou=users,dc=iglu,dc=lu
 cn: ${name} ${surname}
@@ -114,13 +107,13 @@ uid: ${username}
 
 EOF
 
+docker cp users.ldif openldap:/tmp/
+docker exec openldap ldapadd -H ldap://127.0.0.1 -x -v -D "cn=admin,dc=iglu,dc=lu" -f /tmp/users.ldif -w $LDAP_ADMIN_PASSWD
+
 NEXT_UID=$NEXT_UID+1
 
 fi
 done < $INPUT
-
-docker cp users.ldif openldap:/tmp/
-docker exec openldap ldapadd -H ldap://127.0.0.1 -x -v -D "cn=admin,dc=iglu,dc=lu" -f /tmp/users.ldif -w $LDAP_ADMIN_PASSWD
 
 echo "#############################################################################"
 echo ""
