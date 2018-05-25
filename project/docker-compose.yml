@@ -113,6 +113,7 @@ services:
     restart: unless-stopped
 
   wordpress_db:
+    container_name: wordpress_db.${PROJECT_NAME}
     image: mysql:5.7
     volumes:
       - ${VOL_WORDPRESS_DB}:/var/lib/mysql
@@ -128,6 +129,7 @@ services:
     dns: ${IP_DNS}
   
   wordpress:
+    container_name: wordpress.${PROJECT_NAME}
     depends_on:
       - wordpress_db
     image: wordpressldap
@@ -136,9 +138,9 @@ services:
       - "8000:80"
     restart: always
     environment:
-      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
-      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
-      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASS}
+      WORDPRESS_DB_HOST: ${IP_WORDPRESS_DB}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_USER_PASSWD}
     networks:
      main-central: {}
      project-network:
@@ -153,7 +155,7 @@ services:
       DEFAULT_USER: "${PGADMIN_ADMIN_USER:-admin}"
       DEFAULT_PASSWORD: "${PGADMIN_ADMIN_PASSWD:-Tigrou007}"
     depends_on:
-      - drupal-db
+      - wordpress_db
     networks:
       project-network:
         ipv4_address: ${IP_DB_PGADMIN}
