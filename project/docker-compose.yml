@@ -2,7 +2,7 @@ version: '3.5'
 services:
 
   mail:
-    image: tvial/docker-mailserver:latest
+    image: cajetan19/mailserver
     container_name: mail.${PROJECT_NAME}
     hostname: "mail.${PROJECT_NAME}.iglu.lu"
     environment:

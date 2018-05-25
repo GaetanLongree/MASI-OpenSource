@@ -96,7 +96,7 @@ services:
     restart: unless-stopped
 
   mail-central:
-    image: tvial/docker-mailserver:latest
+    image: cajetan19/mailserver
     container_name: mail
     hostname: "mail.iglu.lu"
     environment:
@@ -162,7 +162,7 @@ services:
         ipv4_address: ${IP_ROUNDCUBE}
     dns: ${IP_DNS}
     ports:
-      - "8080:80"
+      - "9980:80"
     volumes:
       - ${VOL_MAIN_ROUNDCUBE}:/var/roundcube/config/
     depends_on: 
