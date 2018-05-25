@@ -79,7 +79,7 @@ if [ -f users.ldif ]; then
         rm users.ldif
     fi
 
-while read name surname username group
+while IFS=, read -r name surname username group
 do
 if [ ! "$name" == "name" ]; then
 
@@ -108,12 +108,13 @@ EOF
 
 NEXT_GID=$NEXT_GID+1
 NEXT_UID=$NEXT_UID+1
+docker cp users.ldif openldap:/tmp/
+docker exec openldap ldapadd -H ldap://127.0.0.1 -x -v -D "cn=admin,dc=iglu,dc=lu" -f /tmp/users.ldif -w $LDAP_ADMIN_PASSWD
 
 fi
 done < $INPUT
 
-docker cp users.ldif openldap:/tmp/
-docker exec openldap ldapadd -H ldap://127.0.0.1 -x -v -D "cn=admin,dc=iglu,dc=lu" -f /tmp/users.ldif -w $LDAP_ADMIN_PASSWD
+
 
 echo "#############################################################################"
 echo ""
