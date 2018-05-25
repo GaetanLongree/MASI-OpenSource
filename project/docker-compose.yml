@@ -31,12 +31,12 @@ services:
       SASLAUTHD_LDAP_BIND_DN: "${LDAP_ADMIN_DN:-cd=admin,dc=iglu,dc=lu}"
       SASLAUTHD_LDAP_PASSWORD: "${LDAP_ADMIN_PASSWD:-Tigrou007}"
       SASLAUTHD_LDAP_SEARCH_BASE: "ou=users,dc=iglu,dc=lu"
-      SASLAUTHD_LDAP_FILTER: "(&(uid=%U)(objectClass=posixAccount))"
-      DOVECOT_PASS_FILTER: "(&(objectClass=posixAccount)(mail=%u))"
-      DOVECOT_USER_FILTER: "(&(objectClass=posixAccount)(mail=%u))"
-      LDAP_QUERY_FILTER_USER: "(&(mail=%s)(mailEnabled=TRUE))"
-      LDAP_QUERY_FILTER_GROUP: "(&(mail=%s)(mailEnabled=TRUE))"
-      LDAP_QUERY_FILTER_ALIAS: "(&(mail=%s)(mailEnabled=TRUE))"
+      SASLAUTHD_LDAP_FILTER: "(&(uid=%n)(objectClass=posixAccount)(memberof=CN=${PROJECT_NAME}Mails,ou=groups,DC=iglu,DC=lu))"
+      DOVECOT_PASS_FILTER: "(&(objectClass=posixAccount)(uid=%n))"
+      DOVECOT_USER_FILTER: "(&(objectClass=posixAccount)(uid=%n))"
+      LDAP_QUERY_FILTER_USER: "(&(uid=%u)(mailEnabled=TRUE))"
+      LDAP_QUERY_FILTER_GROUP: "(&(uid=%u)(mailEnabled=TRUE))"
+      LDAP_QUERY_FILTER_ALIAS: "(&(uid=%u)(mailEnabled=TRUE))"
     volumes:
       - ${BASE_VOL}/${PROJECT_NAME}${VOL_MAIL_MAILS}:/var/mail
       - ${BASE_VOL}/${PROJECT_NAME}${VOL_MAIL_STATE}:/var/mail-state
@@ -81,8 +81,6 @@ services:
       SMB_USER_PASSWD: ${SMB_PROJECT_USER_PASSWD}
     volumes:
       - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_CONF}:/etc/samba
-      - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_LDAPTOOLS_CONF}:/etc/smbldap-tools
-      - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_PRIVATE}:/var/lib/samba/private
       - ${BASE_VOL}/${PROJECT_NAME}${VOL_SAMBA_SHARE}:/share
     networks:
       project-network:

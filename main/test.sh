@@ -41,7 +41,7 @@ objectClass: posixAccount
 objectClass: top
 objectClass: PostfixBookMailAccount
 mail: jdoe@iglu.lu
-gidNumber: 501
+gidNumber: 601
 givenName: John
 homeDirectory: /home/users/jdoe
 mailEnabled: TRUE
@@ -52,6 +52,44 @@ userPassword: {SSHA}U37xQpXgHLXluP6lGFWr0PZrn/7Jy2+a
 sn: Doe
 uidNumber: 1003
 uid: jdoe
+
+dn: cn=Gaetan Longree,ou=users,dc=iglu,dc=lu
+cn: Gaetan Longree
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+objectClass: PostfixBookMailAccount
+mail: glongree@iglu.lu
+gidNumber: 601
+givenName: Gaetan
+homeDirectory: /home/users/glongree
+mailEnabled: TRUE
+mailGidNumber: 601
+mailHomeDirectory: /var/mail/iglu.lu/glongree
+mailUidNumber: 1003
+userPassword: {SSHA}U37xQpXgHLXluP6lGFWr0PZrn/7Jy2+a
+sn: Longree
+uidNumber: 1001
+uid: glongree
+
+dn: cn=Isabelle Piccar,ou=users,dc=iglu,dc=lu
+cn: Isabelle Piccar
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+objectClass: PostfixBookMailAccount
+mail: ipiccar@iglu.lu
+gidNumber: 601
+givenName: Isabelle
+homeDirectory: /home/users/ipiccar
+mailEnabled: TRUE
+mailGidNumber: 601
+mailHomeDirectory: /var/mail/iglu.lu/ipiccar
+mailUidNumber: 1002
+userPassword: {SSHA}U37xQpXgHLXluP6lGFWr0PZrn/7Jy2+a
+sn: Piccar
+uidNumber: 1002
+uid: ipiccard
 
 EOF
 

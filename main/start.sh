@@ -1,23 +1,18 @@
 #!/bin/bash
 
 # get variables from .env file
-#$DNS_IP=$(grep "IP_DNS=" .env | sed 's/IP_DNS=//')
-#$MAIL_IP=$(grep "IP_MAIL=" .env | sed 's/IP_MAIL=//')
-#$WEBMAIL_IP=$(grep "IP_ROUNDCUBE" .env | sed 's/IP_ROUNDCUBE//')
-#$DNS_DB_NAME=$(grep "IP_ROUNDCUBE" .env | sed 's/IP_ROUNDCUBE//')
-#$MAIN_NETWORK_SUBNET=$(grep "MAIN_NETWORK_SUBNET=" .env | sed 's/MAIN_NETWORK_SUBNET=//' | sed 's/\/24//')
 source .env
 
 TLD_DOMAIN_PTR=$(echo $MAIN_NETWORK_SUBNET | awk 'BEGIN{FS="."}{print $3"."$2"."$1}')
 MAIL_IP_HOST_ID=$(echo $IP_MAIL | awk 'BEGIN{FS="."}{print $4}')
 
 # creating volume directories
-mkdir /mnt/share
-mkdir /mnt/share/main/ldap
-mkdir /mnt/share/main/db
-mkdir /mnt/share/main/dns
-mkdir /mnt/share/main/mail
-chmod -R 777 /mnt/share/
+su -c "mkdir /mnt/share; \
+mkdir /mnt/share/main/ldap; \
+mkdir /mnt/share/main/db; \
+mkdir /mnt/share/main/dns; \
+mkdir /mnt/share/main/mail; \
+chmod -R 777 /mnt/share/"
 
 # launch docker containers
 docker-compose up -d
