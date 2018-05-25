@@ -83,7 +83,7 @@ while IFS=, read -r name surname username group
 do
 if [ ! "$name" == "name" ]; then
 
-cat >> users.ldif << EOF
+cat > users.ldif << EOF
 
 dn: cn=${name} ${surname},ou=users,dc=iglu,dc=lu
 cn: ${name} ${surname}
