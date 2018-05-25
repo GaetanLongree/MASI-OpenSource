@@ -18,8 +18,8 @@ services:
         ipv4_address: ${IP_LDAP_HOST}
     dns: ${IP_DNS}
     ports:
-      - "389:389"
-      - "639:639"
+      - "${PUBLIC_IP:-10.113.101.221}:389:389"
+      - "${PUBLIC_IP:-10.113.101.221}:639:639"
     restart: unless-stopped
 
   phpldapadmin:
@@ -32,7 +32,7 @@ services:
         ipv4_address: ${IP_PHPLDAPADMIN}
     dns: ${IP_DNS}
     ports:
-      - "9443:443"
+      - "${PUBLIC_IP:-10.113.101.221}:${LDAP_ADMIN_PORT}:443"
     depends_on:
       - openldap
     restart: unless-stopped
@@ -54,7 +54,7 @@ services:
         ipv4_address: ${IP_DNS}
     dns: ${IP_DNS}
     ports:
-      - "53:53/udp"
+      - "${PUBLIC_IP:-10.113.101.221}:53:53/udp"
     depends_on:
       - dns-db
     restart: unless-stopped
@@ -75,7 +75,7 @@ services:
         ipv4_address: ${IP_DNS_DB}
     dns: ${IP_DNS}
     ports:
-      - "8432:5432"
+      - "${PUBLIC_IP:-10.113.101.221}:8432:5432"
     restart: unless-stopped
 
   pgadmin4:
@@ -90,7 +90,7 @@ services:
         ipv4_address: ${IP_DB_PGADMIN}
     dns: ${IP_DNS}
     ports:
-      - "8081:5050"
+      - "${PUBLIC_IP:-10.113.101.221}:${PGADMIN_PORT}:5050"
     depends_on: 
       - dns-db
     restart: unless-stopped
@@ -140,10 +140,10 @@ services:
         ipv4_address: ${IP_MAIL}
     dns: ${IP_DNS}
     ports:
-      - "25:25"
-      - "143:143"
-      - "587:587"
-      - "993:993"
+      - "${PUBLIC_IP:-10.113.101.221}:25:25"
+      - "${PUBLIC_IP:-10.113.101.221}:143:143"
+      - "${PUBLIC_IP:-10.113.101.221}:587:587"
+      - "${PUBLIC_IP:-10.113.101.221}:993:993"
     depends_on: 
       - openldap
     restart: unless-stopped
@@ -162,7 +162,7 @@ services:
         ipv4_address: ${IP_ROUNDCUBE}
     dns: ${IP_DNS}
     ports:
-      - "9980:80"
+      - "${PUBLIC_IP:-10.113.101.221}:${ROUNDCUBE_PORT}:80"
     volumes:
       - ${VOL_MAIN_ROUNDCUBE}:/var/roundcube/config/
     depends_on: 
