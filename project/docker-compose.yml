@@ -140,6 +140,7 @@ services:
     volumes:
       - ${VOL_WORDPRESS_CODE}:/code
       - ${VOL_WORDPRESS_HTML}:/var/www/html
+      - ${VOL_WORDPRESS_ETC}:/etc
     environment:
       WORDPRESS_DB_HOST: ${IP_WORDPRESS_DB}:3306
       #WORDPRESS_DB_USER: ${MYSQL_USER}
