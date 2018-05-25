@@ -69,8 +69,6 @@ docker exec openldap ldapadd -H ldap://127.0.0.1 -x -D "cn=admin,dc=iglu,dc=lu" 
 
 NEXT_UID=1000
 declare -i NEXT_UID
-NEXT_GID=500
-declare -i NEXT_GID
 
 INPUT=users.csv
 IFS=,
@@ -79,9 +77,19 @@ if [ -f users.ldif ]; then
         rm users.ldif
     fi
 
+    # TODO assign groups whe 600=admin 601=user 602=externals
+
 while read name surname username group
 do
 if [ ! "$name" == "name" ]; then
+
+if [ $group = "administrators" ]; then
+    $GID=600
+elif [ $group = "users" ]; then
+    $GID=601
+elif [ $group = "externals" ]; then
+    $GID=602
+fi
 
 cat >> users.ldif << EOF
 
@@ -92,11 +100,11 @@ objectClass: posixAccount
 objectClass: top
 objectClass: PostfixBookMailAccount
 mail: ${username}@iglu.lu
-gidNumber: ${NEXT_GID}
+gidNumber: ${GID}
 givenName: ${name}
 homeDirectory: /home/users/${username}
 mailEnabled: TRUE
-mailGidNumber: ${NEXT_GID}
+mailGidNumber: ${GID}
 mailHomeDirectory: /var/mail/iglu.lu/${username}
 mailUidNumber: ${NEXT_UID}
 userPassword: {SSHA}doO0M2OTqtqFCeAbnMvfdeQhO4yCws7U
@@ -106,7 +114,6 @@ uid: ${username}
 
 EOF
 
-NEXT_GID=$NEXT_GID+1
 NEXT_UID=$NEXT_UID+1
 
 fi
