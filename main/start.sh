@@ -74,14 +74,14 @@ INPUT=users.csv
 
 while IFS=, read -r name surname username group
 do
-if [ ! "$name" == "name" ]; then
+if [ ! "$name" = "name" ]; then
 
-if [ $group = "administrators" ]; then
-    $GID=600
-elif [ $group = "users" ]; then
-    $GID=601
-elif [ $group = "externals" ]; then
-    $GID=602
+if [ "$group" = "administrators" ]; then
+    GID=600
+elif [ "$group" = "users" ]; then
+    GID=601
+elif [ "$group" = "externals" ]; then
+    GID=602
 fi
 
 cat > users.ldif << EOF
@@ -114,6 +114,8 @@ NEXT_UID=$NEXT_UID+1
 
 fi
 done < $INPUT
+
+su -c "chmod 777 -R /mnt/share/main/mail/var/mail"
 
 echo "#############################################################################"
 echo ""

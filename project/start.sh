@@ -8,7 +8,7 @@ echo "#####################################################"
 
 NEW_IP_ADD=$1
 
-if [ $1 = "" ]; then
+if [ "$1" = "" ]; then
     echo "Please provide a new free IP address in CIDR (10.10.10.10/24) as argument"
     exit 1
 fi
@@ -36,7 +36,6 @@ elif  [ "$(echo $NEW_IP_ADD | awk -F "\/" '{print $2}')" = "8" ]; then
 fi
 
 IFS=. read -r io1 io2 io3 io4 <<< $(echo $NEW_IP_ADD | sed 's/\/[0-9][0-9]$//')
-
 su -c "cat >> /etc/network/interfaces << EOF
 
 auto ${DEFAULT_DEV}:${NEXT_SUBIF}
@@ -89,21 +88,20 @@ cat > records.sql << EOF
 INSERT INTO domains (name, type) values ('${PROJECT_NAME}.iglu.lu', 'NATIVE');
 INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'${PROJECT_NAME}.iglu.lu','$IP_DNS admin.${PROJECT_NAME}.iglu.lu 1 10380 3600 604800 3600','SOA',86400,NULL);
 INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'${PROJECT_NAME}.iglu.lu','$IP_DNS','NS',86400,NULL);
-INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'mail.${PROJECT_NAME}.iglu.lu','$IP_MAIL','A',120,NULL);
-INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'webmail.${PROJECT_NAME}.iglu.lu','$IP_ROUNDCUBE','A',120,NULL);
-INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'gitlab.${PROJECT_NAME}.iglu.lu','$IP_ROUNDCUBE','A',120,NULL);
-INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'cms.${PROJECT_NAME}.iglu.lu','$IP_ROUNDCUBE','A',120,NULL);
-INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'www.${PROJECT_NAME}.iglu.lu','$IP_ROUNDCUBE','A',120,NULL);
+INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'mail.${PROJECT_NAME}.iglu.lu','${PUBLIC_IP}','A',120,NULL);
+INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'webmail.${PROJECT_NAME}.iglu.lu','${PUBLIC_IP}','A',120,NULL);
+INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'gitlab.${PROJECT_NAME}.iglu.lu','${PUBLIC_IP}','A',120,NULL);
+INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'cms.${PROJECT_NAME}.iglu.lu','${PUBLIC_IP}','A',120,NULL);
+INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'www.${PROJECT_NAME}.iglu.lu','${PUBLIC_IP}','A',120,NULL);
 INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'${PROJECT_NAME}.iglu.lu','mail.${PROJECT_NAME}.iglu.lu','MX',120,25);
 EOF
 
 NEXT_ID=$NEXT_ID+1
 
 cat >> records.sql << EOF
-INSERT INTO domains (name, type) values ('$TLD_DOMAIN_PTR.in-addr.arpa', 'NATIVE');
-INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'$TLD_DOMAIN_PTR.in-addr.arpa','${PROJECT_NAME}.iglu.lu admin.${PROJECT_NAME}.iglu.lu 1 10380 3600 604800 3600','SOA',86400,NULL);
-INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'$TLD_DOMAIN_PTR.in-addr.arpa','${PROJECT_NAME}.iglu.lu','NS',86400,NULL);
-INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (${NEXT_ID},'$MAIL_IP_HOST_ID.$TLD_DOMAIN_PTR.in-addr.arpa','mail.${PROJECT_NAME}.iglu.lu','A',120,NULL);
+--INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (2,'$TLD_DOMAIN_PTR.in-addr.arpa','${PROJECT_NAME}.iglu.lu admin.${PROJECT_NAME}.iglu.lu 1 10380 3600 604800 3600','SOA',86400,NULL);
+--INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (2,'$TLD_DOMAIN_PTR.in-addr.arpa','${PROJECT_NAME}.iglu.lu','NS',86400,NULL);
+INSERT INTO records (domain_id, name, content, type,ttl,prio) VALUES (2,'$MAIL_IP_HOST_ID.$TLD_DOMAIN_PTR.in-addr.arpa','mail.${PROJECT_NAME}.iglu.lu','A',120,NULL);
 EOF
 docker cp records.sql dns-db:/tmp/
 docker exec dns-db psql -f /tmp/records.sql pdns -U admin
@@ -125,19 +123,19 @@ INPUT=users.csv
 # create new users
 while IFS=, read -r name surname username group
 do
-if [ ! "$name" == "name" ]; then
+if [ ! "$name" = "name" ]; then
 
 # search is user exist, if not, create it
 QUERY=$(docker exec openldap ldapsearch -D "cn=admin,dc=iglu,dc=lu" -w Tigrou007 -h 127.0.0.1 -b "dc=iglu,dc=lu" -s sub "(uid=${username})")
-if [[ ! $QUERY = *"# numEntries: 1"* ]]; then
+if [[ ! "$QUERY" = *"# numEntries: 1"* ]]; then
 # if it's not here, create it
 
-if [ $group = "administrators" ]; then
-    $GID=600
-elif [ $group = "users" ]; then
-    $GID=601
-elif [ $group = "externals" ]; then
-    $GID=602
+if [ "$group" = "administrators" ]; then
+    GID="600"
+elif [ "$group" = "users" ]; then
+    GID="601"
+elif [ "$group" = "externals" ]; then
+    GID="602"
 fi
 
 cat > users.ldif << EOF
@@ -206,8 +204,8 @@ EOF
 
 while IFS=, read -r name surname username group
 do
-    if [ ! "$name" == "name" ]; then
-        if [ $group = "administrators" ]; then
+    if [ ! "$name" = "name" ]; then
+        if [ "$group" = "administrators" ]; then
             echo "memberUid: ${username}" >> groups.ldif
         fi
     fi
@@ -229,8 +227,8 @@ EOF
 
 while IFS=, read -r name surname username group
 do
-    if [ ! "$name" == "name" ]; then
-        if [ $group = "users" ]; then
+    if [ ! "$name" = "name" ]; then
+        if [ "$group" = "users" ]; then
             echo "memberUid: ${username}" >> groups.ldif
         fi
     fi
@@ -252,8 +250,8 @@ EOF
 
 while IFS=, read -r name surname username group
 do
-    if [ ! "$name" == "name" ]; then
-        if [ $group = "externals" ]; then
+    if [ ! "$name" = "name" ]; then
+        if [ "$group" = "externals" ]; then
             echo "memberUid: ${username}" >> groups.ldif
         fi
     fi
@@ -275,7 +273,7 @@ EOF
 
 while IFS=, read -r name surname username group
 do
-    if [ ! "$name" == "name" ]; then
+    if [ ! "$name" = "name" ]; then
         echo "memberUid: ${username}" >> groups.ldif
     fi
 done < $INPUT
@@ -284,6 +282,12 @@ docker cp groups.ldif openldap:/tmp/
 docker exec openldap ldapadd -H ldap://127.0.0.1 -x -v -D "cn=admin,dc=iglu,dc=lu" -f /tmp/groups.ldif -w $LDAP_ADMIN_PASSWD
 
 # launch git lab
+
+echo "#####################################################"
+echo ""
+echo " Configuring gitlab"
+echo ""
+echo "#####################################################"
 
 su -c "chmod 777 -R /mnt/share/${PROJECT_NAME}/"
 sed -i "13s/.*/ external_url 'http:\/\/gitlab.$PROJECT_NAME.iglu.lu'/" /mnt/share/${PROJECT_NAME}/gitlab/config/gitlab.rb
@@ -305,13 +309,45 @@ sed -i "239s/.*/     block_auto_created_users: false/" /mnt/share/${PROJECT_NAME
 sed -i "240s/.*/     base: 'OU=users,DC=iglu,DC=lu'/" /mnt/share/${PROJECT_NAME}/gitlab/config/gitlab.rb
 sed -i "241s/.*/     user_filter: '\(objectClass=posixAccount\)\(memberof=cn=${PROJECT_NAME}Mails,ou=groups,DC=iglu,DC=lu\)'/" /mnt/share/${PROJECT_NAME}/gitlab/config/gitlab.rb
 sed -i "266s/.*/ EOS/" /mnt/share/${PROJECT_NAME}/gitlab/config/gitlab.rb
-echo updating configuration file
+echo "updating configuration file"
 sleep 20
-echo reconfiguring...
+echo "reconfiguring..."
 docker exec gitlab.${PROJECT_NAME} gitlab-ctl reconfigure
-echo restarting...
+echo "restarting..."
 docker exec gitlab.${PROJECT_NAME} gitlab-ctl restart
 echo "done"
 
+su -c "chmod 777 -R /mnt/share/${PROJECT_NAME}/mail/mails"
 
-
+echo "#############################################################################"
+echo ""
+echo "${PROJECT_NAME} services launched"
+echo ""
+echo "# Services available:"
+echo "## RoundCube: http://${PUBLIC_IP}:${ROUNDCUBE_PORT}/"
+echo "## GitLab: http://${PUBLIC_IP}:${GITLAB_PORT}/"
+echo "## Wordpress: http://${PUBLIC_IP}:${WORDPRESS_PORT}/"
+echo "## Web: http://${PUBLIC_IP}:${PHPMYADMIN_PORT}/"
+echo "## phpMyAdmin: http://${PUBLIC_IP}:${ROUNDCUBE_PORT}/"
+echo ""
+echo "# Credentials"
+echo "Default LDAP user password: Tigrou007"
+echo ""
+echo "GitLab"
+echo "Username: <username>"
+echo "Password: Tigrou007"
+echo ""
+echo "WordPress"
+echo "User created on first connection"
+echo ""
+echo "phpMyAdmin"
+echo "Username: root"
+echo "Password: ${MYSQL_ROOT_PASSWD}"
+echo ""
+echo " ! Note: the mail server takes a while to initialize !"
+echo "          wait a couple of minutes before trying to connect" 
+echo "Roundcube login"
+echo "Username: <username>@${PROJECT_NAME}.iglu.lu"
+echo "Password: Tigrou007"
+echo ""
+echo "#############################################################################"
