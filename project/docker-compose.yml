@@ -118,6 +118,8 @@ services:
     volumes:
       - ${VOL_WORDPRESS_DB}:/var/lib/mysql
     restart: always
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWD}
       MYSQL_DATABASE: ${MYSQL_DB}
@@ -136,24 +138,29 @@ services:
     build: .
     ports:
       - "8000:80"
-    restart: always
+    restart: unless-stopped
+    volumes:
+      - ${VOL_WORDPRESS_CODE}:/code
+      - ${VOL_WORDPRESS_HTML}:/var/www/html
     environment:
-      WORDPRESS_DB_HOST: ${IP_WORDPRESS_DB}
-      WORDPRESS_DB_USER: ${MYSQL_USER}
-      WORDPRESS_DB_PASSWORD: ${MYSQL_USER_PASSWD}
+      WORDPRESS_DB_HOST: ${IP_WORDPRESS_DB}:3306
+      #WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_ROOT_PASSWD}
     networks:
      main-central: {}
      project-network:
        ipv4_address: ${IP_WORDPRESS}
-    dns: ${IP_DNS}
-       
-  pgadmin4:
-    image: fenglc/pgadmin4
-    container_name: pgadmin.${PROJECT_NAME}
-    hostname: "pgadmin.${PROJECT_NAME}.iglu.lu"
+    dns: ${IP_DNS}    
+    
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: wpphpmyadmin.${PROJECT_NAME}
     environment:
-      DEFAULT_USER: "${PGADMIN_ADMIN_USER:-admin}"
-      DEFAULT_PASSWORD: "${PGADMIN_ADMIN_PASSWD:-Tigrou007}"
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWD}
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSWORD: ${MYSQL_USER_PASSWD}
+        PMA_HOST: ${IP_WORDPRESS_DB}
+        PMA_PORT: 3306
     depends_on:
       - wordpress_db
     networks:
@@ -161,7 +168,7 @@ services:
         ipv4_address: ${IP_DB_PGADMIN}
     dns: ${IP_DNS}
     ports:
-      - "5050:5050"
+      - "5080:80"
     restart: unless-stopped
 
 networks:
