@@ -97,26 +97,6 @@ services:
     image: 'gitlab/gitlab-ce:latest'
     container_name: gitlab.${PROJECT_NAME}
     hostname: "gitlab.${PROJECT_NAME}.iglu.lu"
-    environment:
-      GITLAB_OMNIBUS_CONFIG: |
-        external_url 'https://gitlab.iglu.lu'
-        gitlab_rails['ldap_servers'] = YAML.load <<-'EOS'
-        main: # 'main' is the GitLab 'provider ID' of this LDAP server
-          label: 'LDAP'
-          host: '${IP_LDAP_HOST}'
-          port: 389
-          uid: 'uid'
-          bind_dn: '${LDAP_ADMIN_DN}'
-          password: '${LDAP_ADMIN_PASSWD}'
-          encryption: 'plain' # "start_tls" or "simple_tls" or "plain"
-          verify_certificates: true
-          active_directory: true
-          allow_username_or_email_login: true
-          lowercase_usernames: false
-          block_auto_created_users: false
-          base: 'OU=users,DC=iglu,DC=lu'
-          user_filter: '(&(uid=%u)(objectClass=posixAccount))'
-        EOS
     volumes:
       - ${BASE_VOL}/${PROJECT_NAME}${VOL_GITLAB_CONFIG}:/etc/gitlab
       - ${BASE_VOL}/${PROJECT_NAME}${VOL_GITLAB_LOGS}:/var/log/gitlab
@@ -132,41 +112,39 @@ services:
       - "8022:22"
     restart: unless-stopped
 
-  drupal:
-    image: drupalldap
-    container_name: cms.${PROJECT_NAME}
-    hostname: "cms.${PROJECT_NAME}.iglu.lu"
-    build: .
+  wordpress_db:
+    image: mysql:5.7
     volumes:
-      - ${BASE_VOL}/${PROJECT_NAME}${VOL_DRUPAL_MODULES}:/var/www/html/modules
-      - ${BASE_VOL}/${PROJECT_NAME}${VOL_DRUPAL_PROFILES}:/var/www/html/profiles
-      - ${BASE_VOL}/${PROJECT_NAME}${VOL_DRUPAL_SITES}:/var/www/html/sites
-      - ${BASE_VOL}/${PROJECT_NAME}${VOL_DRUPAL_THEMES}:/var/www/html/themes
-    networks:
-      main-central: {}
-      project-network:
-        ipv4_address: ${IP_DRUPAL}
-    dns: ${IP_DNS}
-    ports:
-      - "8090:80"
-    restart: unless-stopped
-
-  drupal-db:
-    image: postgres
-    container_name: drupal-db.${PROJECT_NAME}
-    hostname: "drupal-db.${PROJECT_NAME}.iglu.lu"
+      - ${VOL_WORDPRESS_DB}:/var/lib/mysql
+    restart: always
     environment:
-      POSTGRES_USER: "${POSTGRES_DB_ADMIN_USER:-admin}"
-      POSTGRES_PASSWORD: "${POSTGRES_DB_ADMIN_PASSWD:-Tigrou007}"
-    volumes:
-      - ${BASE_VOL}/${PROJECT_NAME}${VOL_DRUPAL_DB_DATA}:/var/lib/postgresql/data
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWD}
+      MYSQL_DATABASE: ${MYSQL_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_USER_PASSWD}
     networks:
-      main-central: {}
-      project-network:
-        ipv4_address: ${IP_DB_DRUPAL}
+     project-network:
+       ipv4_address: ${IP_WORDPRESS_DB}
     dns: ${IP_DNS}
-    restart: unless-stopped
-
+  
+  wordpress:
+    depends_on:
+      - wordpress_db
+    image: wordpressldap
+    build: .
+    ports:
+      - "8000:80"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASS}
+    networks:
+     main-central: {}
+     project-network:
+       ipv4_address: ${IP_WORDPRESS}
+    dns: ${IP_DNS}
+       
   pgadmin4:
     image: fenglc/pgadmin4
     container_name: pgadmin.${PROJECT_NAME}
