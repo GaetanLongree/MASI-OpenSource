@@ -15,10 +15,17 @@ Pour chacun des services dont la société a besoin, nous avons tenté de sélec
 
 ### Serveur LDAP
 
-| **OpenLDAP** | Principalement CLI → extensible avec une interface web pour la gestion |
-| ApacheDS | - Écrit en Java<br> - Gestion par software |
-| 389 Directory Server | - Développé par Red Hat<br> - Gestion possible via web interface + software |
-| Forgerock directory services | - Écrit en Java<br> - Gestion par software |
+ * **OpenLDAP**
+    * Principalement CLI → extensible avec une interface web pour la gestion
+ * ApacheDS
+    * Écrit en Java
+    * Gestion par software
+ * 389 Directory Server
+    * Développé par Red Hat
+    * Gestion possible via web interface + software
+ * Forgerock directory services
+    * Écrit en Java
+    * Gestion par software |
 
 Nous avons choisi OpenLDAP car il est déjà fort établi dans les annuaires open source, ce qui se traduit par une grande quantité de documentation.
 
@@ -99,6 +106,8 @@ Les conteneurs sont liés à leur propre repository GitHub, donnant accès au co
 ## Architecture
 
 Voici un schéma représentant les différents services repris par notre solution. Ils sont divisés en deux parties : la partie propre à l’infrastructure de la société et la partie propre à chaque projet.
+
+![architecture](https://raw.githubusercontent.com/GaetanLongree/MASI-OpenSource/master/media/architecture.png "architecture")
 
 Les flèches représentent les dépendances entre les différents conteneurs. 
 
