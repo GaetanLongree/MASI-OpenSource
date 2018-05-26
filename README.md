@@ -33,11 +33,16 @@ Nous avon étendu ce conteneur afin d'intégrer un script de création d'une str
 
 ### Serveur DNS + DB (pour enregistrements)
 
-| **PowerDNS** | Supporte beaucoup de back-end (MySQL, Postgresql, etc… lien) |
-| MyDNS-NG | - Support pour des DB en back-end<br> - Pas de DB |
+* **PowerDNS**
+    * Supporte beaucoup de back-end (MySQL, Postgresql, etc… lien)
+* MyDNS-NG
+    * Support pour des DB en back-end
+    * Pas de DB
 
 #### DB :
-| **PostgreSQL** | - Peut également être utilisée avec Gitlab (regroupement des services sur un sgbd -> voir améliorations possibles)<br> - choisie arbitrairement (habitude de travailler avec ce sgbd) |
+* **PostgreSQL**
+    * Peut également être utilisée avec Gitlab (regroupement des services sur un sgbd -> voir améliorations possibles)
+    * choisie arbitrairement (habitude de travailler avec ce sgbd)
 
 Nous désirions avoir un service DNS qu'il était possible d'étendre sans manipuler des fichiers. Une gestion par base de données se présentait comme plus adéquate (comme expliqué dans le détail du script).
 
@@ -45,13 +50,22 @@ Nous avons également étendu le conteneur du service DNS et le conteneur de bas
 
 ### Serveur mail
 
-| Zimbra | Pas prévu pour déploiement Docker |
-| **tvial/docker-mailserver** | Solution tout-en-un permettant de directement interconnecter avec un serveur LDAP |
-| hardware/mailserver | Ensemble de conteneur préfait |
-| Mailu | Solution Open source mais non testée pour un environnement de production |
-| poste.io | - FGratuit mais pour usage personnel uniquement<br> - Open source ? |
-| freeposte.io | - Alternative Open source  à poste.io<br> - Solution de type tout-en-un |
-| postfix/dovecot | Implémentation à la main sans webmail  |
+* Zimbra
+    * Pas prévu pour déploiement Docker
+* **tvial/docker-mailserver**
+    * Solution tout-en-un permettant de directement interconnecter avec un serveur LDAP
+* hardware/mailserver
+    * Ensemble de conteneur préfait
+* Mailu
+*   Solution Open source mais non testée pour un environnement de production
+* poste.io
+    * Gratuit mais pour usage personnel uniquement
+    * Open source ?
+* freeposte.io
+    * Alternative Open source  à poste.io
+    * Solution de type tout-en-un
+* postfix/dovecot
+    * Implémentation à la main sans webmail
 
 Nous avons choisi ce conteneur pour sa facilité de déploiement sur un service LDAP existant. Cependant la configuration des services dovecot (IMAP) et postfix (SMTP) pour l'authentification et la livraison des mails respectivement a demandé un grand nombre de modifications.
 
@@ -59,12 +73,22 @@ Pour ces raisons, nous avons étendu ce conteneur pour y intégrer notre propre 
 
 ### Serveur de fichiers
 
-| Owncloud | - Connection serveur LDAP possible<br> - Possible d’avoir plusieurs compte avec client Windows |
-| Syncthing | Connection serveur LDAP possible |
-| Seafile | - Connection a serveur LDAP possible<br> - Support sync multiple folder sur client ??? |
-| Resilio | propriétaire |
-| Rclone | Uniquement en ligne de commande |
-| Nextcloud | - Connection a serveur LDAP possible<br> - Support sync multiple folder sur client ???<br> - Fonctionne également avec client OwnCloud |
+* Owncloud
+    * Connection serveur LDAP possible
+    * Possible d’avoir plusieurs compte avec client Windows
+* Syncthing
+    * Connection serveur LDAP possible
+* Seafile
+    * Connection a serveur LDAP possible
+    * Support sync multiple folder sur client ???
+* Resilio
+    * propriétaire
+* Rclone
+    * Uniquement en ligne de commande
+* Nextcloud
+    * Connection a serveur LDAP possible
+    * Support sync multiple folder sur client ???
+    * Fonctionne également avec client OwnCloud
 
 Malheureusement, notre choix initial de Owncloud ne proposait pas de configuration d'authentification au LDAP scriptable. Par un souci de temps, nous sommes donc passés sur un serveur Samba contenant deux partages pré-créer (un conteneur que nous avons créé nous-mêmes), un partage pour les membres internes au projet et un partage pour les membres externes.
 
@@ -74,8 +98,15 @@ Nous avons décidé de scinder le serveur web en deux avec deux fonctionnalités
 
 #### Vitrine
 
-| **Wordpress** | - Connexion via LDAP avec un plugin<br> - Très connu et  très utilisé -> communauté<br> - Convient pour des sites vitrines |
-| Drupal | - CMS correct<br> - Authentification via LDAP avec le LDAP Project<br> - Orienté développeurs -> plus complexe<br> - Convient à des sites complexes |
+* **Wordpress**
+    * Connexion via LDAP avec un plugin
+    * Très connu et  très utilisé -> communauté
+    * Convient pour des sites vitrines
+* Drupal
+    * CMS correct
+    * Authentification via LDAP avec le LDAP Project
+    * Orienté développeurs -> plus complexe
+    * Convient à des sites complexes
 
 Nous avons sélectionné Wordpress comme CMS afin de gérer les sites reprenant les différentes publications relatives aux projets en cours car il est entouré d’une grande communauté (fournissant une documentation étoffée). De plus, il nous a paru être intuitif d’utilisation.
 
@@ -83,15 +114,22 @@ Wordpress dispose d’une place de marché comprenant plusieurs plug-ins permett
 
 #### Serveur Test
 
-| **Apache HTTP Server** | - Nombreuses possibilités de configuration<br> - Très connu -> communauté |
+* **Apache HTTP Server**
+    * Nombreuses possibilités de configuration
+    * Très connu -> communauté
 
 Nous avons choisi d’utiliser Apache comme serveur web car il s’agit d’un serveur web solide, largement utilisé. 
 
 ### Serveur de versionning
 
-| **Gitlab** | - Service de management de repository git en ligne<br> - Issues tracking<br> - User-friendly |
-| Trac | Issues tracking plus que vraiment du versioning |
-| Gogs | Moins connu |
+* **Gitlab**
+    * Service de management de repository git en ligne
+    * Issues tracking
+    * User-friendly
+* Trac
+    * Issues tracking plus que vraiment du versioning
+* Gogs
+    * Moins connu
 
 ### Conteneur personnalisé
 Les conteneurs que nous avons étendus/créés de nous même sont:
