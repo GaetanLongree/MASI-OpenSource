@@ -107,7 +107,7 @@ Les conteneurs sont liés à leur propre repository GitHub, donnant accès au co
 
 Voici un schéma représentant les différents services repris par notre solution. Ils sont divisés en deux parties : la partie propre à l’infrastructure de la société et la partie propre à chaque projet.
 
-![architecture](https://raw.githubusercontent.com/GaetanLongree/MASI-OpenSource/master/media/architecture.png "architecture")
+![architecture](https://raw.githubusercontent.com/GaetanLongree/MASI-OpenSource/master/media/architecture_schema.png "architecture")
 
 Les flèches représentent les dépendances entre les différents conteneurs. 
 
